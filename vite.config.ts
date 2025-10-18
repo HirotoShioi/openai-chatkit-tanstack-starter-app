@@ -11,11 +11,8 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(),
-    // Enables Vite to resolve imports using path aliases.
     tsconfigPaths(),
-    tanstackStart({
-      srcDirectory: 'src', // This is the default
-    }),
+    tanstackStart(),
     viteReact(),
   ],
 })
