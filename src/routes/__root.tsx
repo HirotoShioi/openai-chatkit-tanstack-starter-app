@@ -3,24 +3,24 @@ import {
   Outlet,
   Scripts,
   createRootRoute,
-} from "@tanstack/react-router";
-import "./globals.css";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+} from '@tanstack/react-router'
+import './globals.css'
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: "utf-8" },
+      { charSet: 'utf-8' },
       {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        name: 'viewport',
+        content: 'width=device-width, initial-scale=1',
       },
-      { title: "TanStack Start Starter" },
+      { title: 'TanStack Start Starter' },
     ],
   }),
   component: RootLayout,
-});
+})
 
 function RootLayout() {
   return (
@@ -34,16 +34,16 @@ function RootLayout() {
         <Scripts />
         <TanStackDevtools
           config={{
-            position: "bottom-right",
+            position: 'bottom-right',
           }}
           plugins={[
             {
-              name: "Tanstack Router",
+              name: 'Tanstack Router',
               render: <TanStackRouterDevtoolsPanel />,
             },
           ]}
         />
       </body>
     </html>
-  );
+  )
 }

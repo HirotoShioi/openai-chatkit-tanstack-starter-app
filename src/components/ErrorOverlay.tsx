@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 type ErrorOverlayProps = {
-  error: string | null;
-  fallbackMessage?: ReactNode;
-  onRetry?: (() => void) | null;
-  retryLabel?: string;
-};
+  error: string | null
+  fallbackMessage?: ReactNode
+  onRetry?: (() => void) | null
+  retryLabel?: string
+}
 
 export function ErrorOverlay({
   error,
@@ -14,13 +14,13 @@ export function ErrorOverlay({
   retryLabel,
 }: ErrorOverlayProps) {
   if (!error && !fallbackMessage) {
-    return null;
+    return null
   }
 
-  const content = error ?? fallbackMessage;
+  const content = error ?? fallbackMessage
 
   if (!content) {
-    return null;
+    return null
   }
 
   return (
@@ -33,10 +33,10 @@ export function ErrorOverlay({
             className="mt-4 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-none transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
             onClick={onRetry}
           >
-            {retryLabel ?? "Restart chat"}
+            {retryLabel ?? 'Restart chat'}
           </button>
         ) : null}
       </div>
     </div>
-  );
+  )
 }

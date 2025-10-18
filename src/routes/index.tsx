@@ -1,29 +1,29 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { useCallback } from "react";
-import type {FactAction} from "@/components/ChatKitPanel";
-import { ChatKitPanel  } from "@/components/ChatKitPanel";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useCallback } from 'react'
+import type { FactAction } from '@/components/ChatKitPanel'
+import { ChatKitPanel } from '@/components/ChatKitPanel'
+import { useColorScheme } from '@/hooks/useColorScheme'
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute('/')({
   ssr: false,
   component: Home,
 })
 
 export default function Home() {
-  const { scheme, setScheme } = useColorScheme();
+  const { scheme, setScheme } = useColorScheme()
 
   const handleWidgetAction = useCallback(async (action: FactAction) => {
-    if (import.meta.env.MODE !== "production") {
-      console.info("[ChatKitPanel] widget action", action);
+    if (import.meta.env.MODE !== 'production') {
+      console.info('[ChatKitPanel] widget action', action)
     }
-  }, []);
+  }, [])
 
   const handleResponseEnd = useCallback(() => {
-    if (import.meta.env.MODE !== "production") {
-      console.debug("[ChatKitPanel] response end");
+    if (import.meta.env.MODE !== 'production') {
+      console.debug('[ChatKitPanel] response end')
     }
-  }, []);
+  }, [])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-end bg-slate-100 dark:bg-slate-950">
@@ -36,5 +36,5 @@ export default function Home() {
         />
       </div>
     </main>
-  );
+  )
 }
