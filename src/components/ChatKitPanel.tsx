@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
 import { useMutation } from '@tanstack/react-query'
 import { ErrorOverlay } from './ErrorOverlay'
@@ -49,7 +49,6 @@ export function ChatKitPanel({
 }: ChatKitPanelProps) {
   const processedFacts = useRef(new Set<string>())
   const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors())
-  const isMountedRef = useRef(true)
   const [widgetInstanceKey, setWidgetInstanceKey] = useState(0)
 
   const setErrorState = useCallback((updates: Partial<ErrorState>) => {
@@ -59,15 +58,6 @@ export function ChatKitPanel({
   const isWorkflowConfigured = Boolean(
     WORKFLOW_ID && !WORKFLOW_ID.startsWith('wf_replace'),
   )
-
-  useEffect(() => {
-    if (!isWorkflowConfigured && isMountedRef.current) {
-      setErrorState({
-        session: 'Set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file.',
-        retryable: false,
-      })
-    }
-  }, [isWorkflowConfigured, setErrorState])
 
   const handleResetChat = useCallback(() => {
     processedFacts.current.clear()
@@ -88,6 +78,7 @@ export function ChatKitPanel({
         })
       },
     })
+
   const chatkit = useChatKit({
     api: { getClientSecret },
     theme: {
@@ -169,27 +160,42 @@ export function ChatKitPanel({
     })
   }
 
+  const content = () => {
+    if (!isWorkflowConfigured) {
+      return <ErrorOverlay
+        error="ChatKit workflow is not configured."
+        fallbackMessage="Please set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file."
+        onRetry={null}
+      />
+    }
+    return (
+      <>
+        <ChatKit
+          key={widgetInstanceKey}
+          control={chatkit.control}
+          className={
+            blockingError || isInitializingSession
+              ? 'pointer-events-none opacity-0'
+              : 'block h-full w-full'
+          }
+        />
+        <ErrorOverlay
+          error={blockingError}
+          fallbackMessage={
+            blockingError || !isInitializingSession
+              ? null
+              : 'Loading assistant session...'
+          }
+          onRetry={blockingError && errors.retryable ? handleResetChat : null}
+          retryLabel="Restart chat"
+        />
+      </>
+    )
+  }
+
   return (
     <div className="relative pb-8 flex h-[90vh] w-full rounded-2xl flex-col overflow-hidden bg-white shadow-sm transition-colors dark:bg-slate-900">
-      <ChatKit
-        key={widgetInstanceKey}
-        control={chatkit.control}
-        className={
-          blockingError || isInitializingSession
-            ? 'pointer-events-none opacity-0'
-            : 'block h-full w-full'
-        }
-      />
-      <ErrorOverlay
-        error={blockingError}
-        fallbackMessage={
-          blockingError || !isInitializingSession
-            ? null
-            : 'Loading assistant session...'
-        }
-        onRetry={blockingError && errors.retryable ? handleResetChat : null}
-        retryLabel="Restart chat"
-      />
+      {content()}
     </div>
   )
 }
