@@ -27,7 +27,6 @@ type ChatKitPanelProps = {
 
 const isDev = import.meta.env.MODE !== 'production'
 
-
 export function ChatKitPanel({
   theme,
   onWidgetAction,
@@ -47,7 +46,7 @@ export function ChatKitPanel({
     setWidgetInstanceKey((prev) => prev + 1)
   }, [])
 
-  const { mutateAsync: getClientSecret, isPending: isGettingSession, error: sessionError } =
+  const { mutateAsync: getClientSecret, isPending: isGettingClientSecret, error: getClientSecretError } =
     useMutation({
       ...getClientSecretOptions,
       onError: (error) => {
@@ -128,7 +127,7 @@ export function ChatKitPanel({
 
   if (isDev) {
     console.debug('[ChatKitPanel] render state', {
-      isGettingSession: isGettingSession,
+      isGettingClientSecret: isGettingClientSecret,
       hasControl: Boolean(chatkit.control),
       hasError: Boolean(),
       workflowId: WORKFLOW_ID,
@@ -144,7 +143,7 @@ export function ChatKitPanel({
     }
     return (
       <>
-        {isGettingSession && (<div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-slate-900/70">
+        {isGettingClientSecret && (<div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
           Loading assistant session...
         </div>)
         }
@@ -152,13 +151,13 @@ export function ChatKitPanel({
           key={widgetInstanceKey}
           control={chatkit.control}
           className={
-            isGettingSession
+            isGettingClientSecret
               ? 'pointer-events-none opacity-0'
               : 'block h-full w-full'
           }
         />
         <ErrorOverlay
-          error={sessionError?.message || null}
+          error={getClientSecretError?.message || null}
           onRetry={handleResetChat}
           retryLabel="Restart chat"
         />

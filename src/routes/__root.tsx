@@ -47,7 +47,7 @@ function RootLayout() {
             },
           ]}
         />
-      <ReactQueryDevtools buttonPosition="top-right" />
+        <ReactQueryDevtools buttonPosition="top-right" />
       </body>
     </html>
   )
