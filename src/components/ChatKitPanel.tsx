@@ -25,21 +25,7 @@ type ChatKitPanelProps = {
   onThemeRequest: (scheme: ColorScheme) => void
 }
 
-type ErrorState = {
-  script: string | null
-  session: string | null
-  integration: string | null
-  retryable: boolean
-}
-
 const isDev = import.meta.env.MODE !== 'production'
-
-const createInitialErrors = (): ErrorState => ({
-  script: null,
-  session: null,
-  integration: null,
-  retryable: false,
-})
 
 export function ChatKitPanel({
   theme,
@@ -48,12 +34,8 @@ export function ChatKitPanel({
   onThemeRequest,
 }: ChatKitPanelProps) {
   const processedFacts = useRef(new Set<string>())
-  const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors())
   const [widgetInstanceKey, setWidgetInstanceKey] = useState(0)
 
-  const setErrorState = useCallback((updates: Partial<ErrorState>) => {
-    setErrors((current) => ({ ...current, ...updates }))
-  }, [])
 
   const isWorkflowConfigured = Boolean(
     WORKFLOW_ID && !WORKFLOW_ID.startsWith('wf_replace'),
@@ -61,21 +43,16 @@ export function ChatKitPanel({
 
   const handleResetChat = useCallback(() => {
     processedFacts.current.clear()
-    setErrors(createInitialErrors())
     setWidgetInstanceKey((prev) => prev + 1)
   }, [])
 
-  const { mutateAsync: getClientSecret, isPending: isInitializingSession } =
+  const { mutateAsync: getClientSecret, isPending: isGettingClientSecret, error: getClientSecretError } =
     useMutation({
       ...getClientSecretOptions,
       onError: (error) => {
         if (isDev) {
           console.error('[ChatKitPanel] getClientSecret error', error)
         }
-        setErrorState({
-          session: 'Failed to create chat session.',
-          retryable: true,
-        })
       },
     })
 
@@ -136,7 +113,6 @@ export function ChatKitPanel({
       onResponseEnd()
     },
     onResponseStart: () => {
-      setErrorState({ integration: null, retryable: false })
     },
     onThreadChange: () => {
       processedFacts.current.clear()
@@ -148,14 +124,12 @@ export function ChatKitPanel({
     },
   })
 
-  const activeError = errors.session ?? errors.integration
-  const blockingError = errors.script ?? activeError
 
   if (isDev) {
     console.debug('[ChatKitPanel] render state', {
-      isInitializingSession,
+      isGettingClientSecret: isGettingClientSecret,
       hasControl: Boolean(chatkit.control),
-      hasError: Boolean(blockingError),
+      hasError: Boolean(),
       workflowId: WORKFLOW_ID,
     })
   }
@@ -163,30 +137,28 @@ export function ChatKitPanel({
   const content = () => {
     if (!isWorkflowConfigured) {
       return <ErrorOverlay
-        error="ChatKit workflow is not configured."
-        fallbackMessage="Please set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file."
+        error="Please set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file."
         onRetry={null}
       />
     }
     return (
       <>
+        {isGettingClientSecret && (<div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+          Loading assistant session...
+        </div>)
+        }
         <ChatKit
           key={widgetInstanceKey}
           control={chatkit.control}
           className={
-            blockingError || isInitializingSession
+            isGettingClientSecret
               ? 'pointer-events-none opacity-0'
               : 'block h-full w-full'
           }
         />
         <ErrorOverlay
-          error={blockingError}
-          fallbackMessage={
-            blockingError || !isInitializingSession
-              ? null
-              : 'Loading assistant session...'
-          }
-          onRetry={blockingError && errors.retryable ? handleResetChat : null}
+          error={getClientSecretError?.message || null}
+          onRetry={handleResetChat}
           retryLabel="Restart chat"
         />
       </>
