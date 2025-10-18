@@ -13,6 +13,7 @@ export const Route = createFileRoute('/')({
 function Home() {
   const { scheme, setScheme } = useColorScheme()
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   const handleWidgetAction = useCallback(async (action: FactAction) => {
     if (import.meta.env.MODE !== 'production') {
       console.info('[ChatKitPanel] widget action', action)
