@@ -4,10 +4,10 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import appCss from './globals.css?url'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import appCss from './globals.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 
 export const Route = createRootRouteWithContext<{
@@ -24,10 +24,10 @@ export const Route = createRootRouteWithContext<{
     ],
     links: [
       {
-        rel: "stylesheet",
+        rel: 'stylesheet',
         href: appCss,
-      }
-    ]
+      },
+    ],
   }),
   component: RootLayout,
 })

@@ -36,7 +36,6 @@ export function ChatKitPanel({
   const processedFacts = useRef(new Set<string>())
   const [widgetInstanceKey, setWidgetInstanceKey] = useState(0)
 
-
   const isWorkflowConfigured = Boolean(
     WORKFLOW_ID && !WORKFLOW_ID.startsWith('wf_replace'),
   )
@@ -46,15 +45,18 @@ export function ChatKitPanel({
     setWidgetInstanceKey((prev) => prev + 1)
   }, [])
 
-  const { mutateAsync: getClientSecret, isPending: isGettingClientSecret, error: getClientSecretError } =
-    useMutation({
-      ...getClientSecretOptions,
-      onError: (error) => {
-        if (isDev) {
-          console.error('[ChatKitPanel] getClientSecret error', error)
-        }
-      },
-    })
+  const {
+    mutateAsync: getClientSecret,
+    isPending: isGettingClientSecret,
+    error: getClientSecretError,
+  } = useMutation({
+    ...getClientSecretOptions,
+    onError: (error) => {
+      if (isDev) {
+        console.error('[ChatKitPanel] getClientSecret error', error)
+      }
+    },
+  })
 
   const chatkit = useChatKit({
     api: { getClientSecret },
@@ -112,8 +114,7 @@ export function ChatKitPanel({
     onResponseEnd: () => {
       onResponseEnd()
     },
-    onResponseStart: () => {
-    },
+    onResponseStart: () => {},
     onThreadChange: () => {
       processedFacts.current.clear()
     },
@@ -123,7 +124,6 @@ export function ChatKitPanel({
       console.error('ChatKit error', error)
     },
   })
-
 
   if (isDev) {
     console.debug('[ChatKitPanel] render state', {
@@ -136,17 +136,20 @@ export function ChatKitPanel({
 
   const content = () => {
     if (!isWorkflowConfigured) {
-      return <ErrorOverlay
-        error="Please set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file."
-        onRetry={null}
-      />
+      return (
+        <ErrorOverlay
+          error="Please set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file."
+          onRetry={null}
+        />
+      )
     }
     return (
       <>
-        {isGettingClientSecret && (<div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-          Loading assistant session...
-        </div>)
-        }
+        {isGettingClientSecret && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+            Loading assistant session...
+          </div>
+        )}
         <ChatKit
           key={widgetInstanceKey}
           control={chatkit.control}
