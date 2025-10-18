@@ -141,10 +141,10 @@ async function handlePost(request: Request): Promise<Response> {
   }
 }
 
-async function resolveUserId(request: Request): Promise<{
+function resolveUserId(request: Request): {
   userId: string
   sessionCookie: string | null
-}> {
+} {
   const existing = getCookieValue(
     request.headers.get('cookie'),
     SESSION_COOKIE_NAME,
