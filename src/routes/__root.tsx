@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import appCss from './globals.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -50,10 +50,12 @@ function RootLayout() {
             {
               name: 'Tanstack Router',
               render: <TanStackRouterDevtoolsPanel />,
-            },
+            }, {
+              name: 'React Query',
+              render: <ReactQueryDevtoolsPanel  />,
+            }
           ]}
         />
-        <ReactQueryDevtools buttonPosition="top-right" />
       </body>
     </html>
   )
