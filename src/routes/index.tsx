@@ -6,7 +6,6 @@ import { ChatKitPanel } from '@/components/ChatKitPanel'
 import { useColorScheme } from '@/hooks/useColorScheme'
 
 export const Route = createFileRoute('/')({
-  ssr: false,
   component: Home,
 })
 

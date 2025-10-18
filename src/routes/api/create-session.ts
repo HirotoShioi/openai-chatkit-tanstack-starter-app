@@ -43,7 +43,8 @@ async function handlePost(request: Request): Promise<Response> {
     }
 
     const parsedBody = await safeParseJson<CreateSessionRequestBody>(request)
-    const { userId, sessionCookie: resolvedSessionCookie } = resolveUserId(request)
+    const { userId, sessionCookie: resolvedSessionCookie } =
+      resolveUserId(request)
     sessionCookie = resolvedSessionCookie
     const resolvedWorkflowId =
       parsedBody?.workflow?.id ?? parsedBody?.workflowId ?? WORKFLOW_ID
