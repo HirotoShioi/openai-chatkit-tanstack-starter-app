@@ -4,7 +4,7 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import './globals.css'
+import appCss from './globals.css?url'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -22,6 +22,12 @@ export const Route = createRootRouteWithContext<{
       },
       { title: 'TanStack Start Starter' },
     ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: appCss,
+      }
+    ]
   }),
   component: RootLayout,
 })
