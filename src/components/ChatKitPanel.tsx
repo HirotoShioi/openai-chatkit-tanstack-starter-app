@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatKit, useChatKit } from '@openai/chatkit-react'
+import { useMutation } from '@tanstack/react-query'
 import { ErrorOverlay } from './ErrorOverlay'
 import type { ColorScheme } from '@/hooks/useColorScheme'
 import {
-  CREATE_SESSION_ENDPOINT,
   GREETING,
   PLACEHOLDER_INPUT,
   STARTER_PROMPTS,
   WORKFLOW_ID,
   getThemeConfig,
 } from '@/lib/config'
+import { getClientSecretOptions } from '@/hooks/useGetClientSecret'
 
 export type FactAction = {
   type: 'save'
@@ -48,7 +49,6 @@ export function ChatKitPanel({
 }: ChatKitPanelProps) {
   const processedFacts = useRef(new Set<string>())
   const [errors, setErrors] = useState<ErrorState>(() => createInitialErrors())
-  const [isInitializingSession, setIsInitializingSession] = useState(true)
   const isMountedRef = useRef(true)
   const [widgetInstanceKey, setWidgetInstanceKey] = useState(0)
 
@@ -66,118 +66,28 @@ export function ChatKitPanel({
         session: 'Set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file.',
         retryable: false,
       })
-      setIsInitializingSession(false)
     }
   }, [isWorkflowConfigured, setErrorState])
 
   const handleResetChat = useCallback(() => {
     processedFacts.current.clear()
-    setIsInitializingSession(true)
     setErrors(createInitialErrors())
     setWidgetInstanceKey((prev) => prev + 1)
   }, [])
 
-  const getClientSecret = useCallback(
-    async (currentSecret: string | null) => {
-      if (isDev) {
-        console.info('[ChatKitPanel] getClientSecret invoked', {
-          currentSecretPresent: Boolean(currentSecret),
-          workflowId: WORKFLOW_ID,
-          endpoint: CREATE_SESSION_ENDPOINT,
-        })
-      }
-
-      if (!isWorkflowConfigured) {
-        const detail =
-          'Set VITE_PUBLIC_CHATKIT_WORKFLOW_ID in your .env.local file.'
-        if (isMountedRef.current) {
-          setErrorState({ session: detail, retryable: false })
-          setIsInitializingSession(false)
-        }
-        throw new Error(detail)
-      }
-
-      if (isMountedRef.current) {
-        if (!currentSecret) {
-          setIsInitializingSession(true)
-        }
-        setErrorState({ session: null, integration: null, retryable: false })
-      }
-
-      try {
-        const response = await fetch(CREATE_SESSION_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            workflow: { id: WORKFLOW_ID },
-            chatkit_configuration: {
-              // enable attachments
-              file_upload: {
-                enabled: true,
-              },
-            },
-          }),
-        })
-
-        const raw = await response.text()
-
+  const { mutateAsync: getClientSecret, isPending: isInitializingSession } =
+    useMutation({
+      ...getClientSecretOptions,
+      onError: (error) => {
         if (isDev) {
-          console.info('[ChatKitPanel] createSession response', {
-            status: response.status,
-            ok: response.ok,
-            bodyPreview: raw.slice(0, 1600),
-          })
+          console.error('[ChatKitPanel] getClientSecret error', error)
         }
-
-        let data: Record<string, unknown> = {}
-        if (raw) {
-          try {
-            data = JSON.parse(raw) as Record<string, unknown>
-          } catch (parseError) {
-            console.error('Failed to parse create-session response', parseError)
-          }
-        }
-
-        if (!response.ok) {
-          const detail = extractErrorDetail(data, response.statusText)
-          console.error('Create session request failed', {
-            status: response.status,
-            body: data,
-          })
-          throw new Error(detail)
-        }
-
-        const clientSecret = data.client_secret as string | undefined
-        if (!clientSecret) {
-          throw new Error('Missing client secret in response')
-        }
-
-        if (isMountedRef.current) {
-          setErrorState({ session: null, integration: null })
-        }
-
-        return clientSecret
-      } catch (error) {
-        console.error('Failed to create ChatKit session', error)
-        const detail =
-          error instanceof Error
-            ? error.message
-            : 'Unable to start ChatKit session.'
-        if (isMountedRef.current) {
-          setErrorState({ session: detail, retryable: false })
-        }
-        throw error instanceof Error ? error : new Error(detail)
-      } finally {
-        if (isMountedRef.current && !currentSecret) {
-          setIsInitializingSession(false)
-        }
-      }
-    },
-    [isWorkflowConfigured, setErrorState],
-  )
-
+        setErrorState({
+          session: 'Failed to create chat session.',
+          retryable: true,
+        })
+      },
+    })
   const chatkit = useChatKit({
     api: { getClientSecret },
     theme: {
@@ -282,53 +192,4 @@ export function ChatKitPanel({
       />
     </div>
   )
-}
-
-function extractErrorDetail(
-  payload: Record<string, unknown> | undefined,
-  fallback: string,
-): string {
-  if (!payload) {
-    return fallback
-  }
-
-  const error = payload.error
-  if (typeof error === 'string') {
-    return error
-  }
-
-  if (
-    error &&
-    typeof error === 'object' &&
-    'message' in error &&
-    typeof (error as { message?: unknown }).message === 'string'
-  ) {
-    return (error as { message: string }).message
-  }
-
-  const details = payload.details
-  if (typeof details === 'string') {
-    return details
-  }
-
-  if (details && typeof details === 'object' && 'error' in details) {
-    const nestedError = (details as { error?: unknown }).error
-    if (typeof nestedError === 'string') {
-      return nestedError
-    }
-    if (
-      nestedError &&
-      typeof nestedError === 'object' &&
-      'message' in nestedError &&
-      typeof (nestedError as { message?: unknown }).message === 'string'
-    ) {
-      return (nestedError as { message: string }).message
-    }
-  }
-
-  if (typeof payload.message === 'string') {
-    return payload.message
-  }
-
-  return fallback
 }

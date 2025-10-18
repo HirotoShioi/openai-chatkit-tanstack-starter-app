@@ -2,13 +2,17 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from '@tanstack/react-router'
 import './globals.css'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import type { QueryClient } from '@tanstack/react-query'
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient
+}>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -43,6 +47,7 @@ function RootLayout() {
             },
           ]}
         />
+      <ReactQueryDevtools buttonPosition="top-right" />
       </body>
     </html>
   )
