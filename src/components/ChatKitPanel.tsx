@@ -47,7 +47,7 @@ export function ChatKitPanel({
     setWidgetInstanceKey((prev) => prev + 1)
   }, [])
 
-  const { mutateAsync: getClientSecret, isPending: isGettingSession, error } =
+  const { mutateAsync: getClientSecret, isPending: isGettingSession, error: sessionError } =
     useMutation({
       ...getClientSecretOptions,
       onError: (error) => {
@@ -158,7 +158,7 @@ export function ChatKitPanel({
           }
         />
         <ErrorOverlay
-          error={error?.message || null}
+          error={sessionError?.message || null}
           onRetry={handleResetChat}
           retryLabel="Restart chat"
         />
