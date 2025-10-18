@@ -10,7 +10,7 @@ export const Route = createFileRoute('/')({
   component: Home,
 })
 
-export default function Home() {
+function Home() {
   const { scheme, setScheme } = useColorScheme()
 
   const handleWidgetAction = useCallback(async (action: FactAction) => {
